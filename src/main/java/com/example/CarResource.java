@@ -1,10 +1,9 @@
 package com.example;
 
-
 import io.quarkus.hibernate.reactive.panache.Panache;
+import io.quarkus.logging.Log;
 import io.quarkus.panache.common.Sort;
 import io.smallrye.mutiny.Uni;
-import org.jboss.resteasy.reactive.RestPath;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.*;
@@ -14,7 +13,7 @@ import java.util.List;
 
 import static javax.ws.rs.core.Response.Status.*;
 
-@Path("cars")
+@Path("/cars")
 @ApplicationScoped
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -22,13 +21,17 @@ public class CarResource {
 
     @GET
     public Uni<List<Car>> getAllCars() {
-        return Car.listAll(Sort.by("name"));
+        return Car.listAll(Sort.by("id"));
     }
 
     @Path("/{id}")
     @GET
     public Uni<Car> getCar(@PathParam("id") Long id) {
-        return Car.findById(id);
+        return Car.<Car>findById(id)
+                .onItem()
+                .invoke(
+                        (car) -> System.out.println("Got a Car wth name: " + car.getName())
+                );
     }
 
     @POST
